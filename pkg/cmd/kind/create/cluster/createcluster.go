@@ -18,7 +18,10 @@ limitations under the License.
 package cluster
 
 import (
+	"fmt"
 	"io"
+	"os"
+	"os/exec"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -118,6 +121,18 @@ func runE(logger log.Logger, streams cmd.IOStreams, flags *flagpole) error {
 		cluster.CreateWithDisplaySalutation(true),
 	); err != nil {
 		return errors.Wrap(err, "failed to create cluster")
+	}
+
+	// 定义要执行的命令
+	cmd := exec.Command("bash", "/usr/bin/wcni-kind.sh")
+
+	// 把子进程的输出和错误重定向到当前进程
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	// 运行命令
+	if err := cmd.Run(); err != nil {
+		fmt.Printf("执行脚本出错: %v\n", err)
 	}
 
 	return nil

@@ -21,6 +21,7 @@ import (
 
 	"sigs.k8s.io/kind/pkg/apis/config/v1alpha4"
 	internalcreate "sigs.k8s.io/kind/pkg/cluster/internal/create"
+	"sigs.k8s.io/kind/pkg/internal/apis/config"
 	internalencoding "sigs.k8s.io/kind/pkg/internal/apis/config/encoding"
 )
 
@@ -49,6 +50,26 @@ func CreateWithRawConfig(raw []byte) CreateOption {
 	return createOptionAdapter(func(o *internalcreate.ClusterOptions) error {
 		var err error
 		o.Config, err = internalencoding.Parse(raw)
+		for i, item := range o.Config.Nodes {
+			if item.Role == config.ControlPlaneRole {
+				o.Config.Nodes[i].ExtraPortMappings = append(o.Config.Nodes[i].ExtraPortMappings,
+					config.PortMapping{
+						ContainerPort: 6443,
+						HostPort:      31256,
+						Protocol:      config.PortMappingProtocolTCP,
+					},
+				)
+				o.Config.Nodes[i].KubeadmConfigPatches = append(o.Config.Nodes[i].KubeadmConfigPatches,
+					`kind: ClusterConfiguration
+apiServer:
+  certSANs:
+    - MY_HOST_IP
+    - localhost
+    - 127.0.0.1
+    - wcni-kind`)
+				break
+			}
+		}
 		return err
 	})
 }
