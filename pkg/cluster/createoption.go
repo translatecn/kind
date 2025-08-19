@@ -84,8 +84,10 @@ apiServer:
 				break
 			}
 		}
+		fmt.Println("✈️✈️✈️✈️✈️✈️✈️✈️✈️✈️✈️✈️✈️✈️✈️")
 		d := yaml.NewEncoder(os.Stdout)
 		d.Encode(o.Config)
+		fmt.Println("✈️✈️✈️✈️✈️✈️✈️✈️✈️✈️✈️✈️✈️✈️✈️")
 		return err
 	})
 }

@@ -81,10 +81,10 @@ func NewCommand(logger log.Logger, streams cmd.IOStreams) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if logger.V(0).Enabled() {
 				// if not -q / --quiet, show lots of info
-				fmt.Fprintln(streams.Out, DisplayVersion()+"hack")
+				fmt.Fprintln(streams.Out, DisplayVersion()+" hack")
 			} else {
 				// otherwise only show semver
-				fmt.Fprintln(streams.Out, Version()+"hack")
+				fmt.Fprintln(streams.Out, Version()+" hack")
 			}
 			return nil
 		},
