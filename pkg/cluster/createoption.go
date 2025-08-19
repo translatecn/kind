@@ -17,6 +17,8 @@ limitations under the License.
 package cluster
 
 import (
+	"fmt"
+	"net"
 	"time"
 
 	"sigs.k8s.io/kind/pkg/apis/config/v1alpha4"
@@ -49,7 +51,17 @@ func CreateWithConfigFile(path string) CreateOption {
 func CreateWithRawConfig(raw []byte) CreateOption {
 	return createOptionAdapter(func(o *internalcreate.ClusterOptions) error {
 		var err error
+		// 这里用 8.8.8.8 测试（不会真的发出请求）
+		conn, err := net.Dial("udp", "8.8.8.8:80")
+		if err != nil {
+			panic(err)
+		}
+		defer conn.Close()
+
+		localAddr := conn.LocalAddr().(*net.UDPAddr)
+
 		o.Config, err = internalencoding.Parse(raw)
+
 		for i, item := range o.Config.Nodes {
 			if item.Role == config.ControlPlaneRole {
 				o.Config.Nodes[i].ExtraPortMappings = append(o.Config.Nodes[i].ExtraPortMappings,
@@ -60,13 +72,13 @@ func CreateWithRawConfig(raw []byte) CreateOption {
 					},
 				)
 				o.Config.Nodes[i].KubeadmConfigPatches = append(o.Config.Nodes[i].KubeadmConfigPatches,
-					`kind: ClusterConfiguration
+					fmt.Sprintf(`kind: ClusterConfiguration
 apiServer:
   certSANs:
-    - MY_HOST_IP
+    - %s
     - localhost
     - 127.0.0.1
-    - wcni-kind`)
+    - wcni-kind`, localAddr.IP.String()))
 				break
 			}
 		}
