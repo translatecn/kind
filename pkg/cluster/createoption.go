@@ -19,12 +19,14 @@ package cluster
 import (
 	"fmt"
 	"net"
+	"os"
 	"time"
 
 	"sigs.k8s.io/kind/pkg/apis/config/v1alpha4"
 	internalcreate "sigs.k8s.io/kind/pkg/cluster/internal/create"
 	"sigs.k8s.io/kind/pkg/internal/apis/config"
 	internalencoding "sigs.k8s.io/kind/pkg/internal/apis/config/encoding"
+	yaml "sigs.k8s.io/yaml/goyaml.v3"
 )
 
 // CreateOption is a Provider.Create option
@@ -82,6 +84,8 @@ apiServer:
 				break
 			}
 		}
+		d := yaml.NewEncoder(os.Stdout)
+		d.Encode(o.Config)
 		return err
 	})
 }
